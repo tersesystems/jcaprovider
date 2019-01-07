@@ -159,8 +159,8 @@ lazy val root = (project in file(".")).enablePlugins(JavaAppPackaging, JavaAgent
     name := "project-with-jcaprovider",
     mainClass := Some("com.example.SecurityProgram"),
     resolvers += Resolver.jcenterRepo,
-    javaAgents += "com.tersesystems.jcaprovider" % "jcaprovider-core" % "1.0-SNAPSHOT" % "dist;compile;test",
-    libraryDependencies += "com.tersesystems.jcaprovider" % "jcaprovider-debugjsse" % "1.0-SNAPSHOT" // use debugjsse as the implementation
+    javaAgents += "com.tersesystems.jcaprovider" % "jcaprovider-core" % "0.1.0-SNAPSHOT" % "dist;compile;test",
+    libraryDependencies += "com.tersesystems.jcaprovider" % "jcaprovider-debugjsse" % "0.1.0-SNAPSHOT" // use debugjsse as the implementation
   )
 ```
 
