@@ -1,5 +1,7 @@
 # JCA Provider Service
 
+[![Bintray](https://img.shields.io/bintray/v/tersesystems/maven/jcaprovider.svg?maxAge=2592000)](https://bintray.com/tersesystems/maven/jcaprovider)
+
 This is a very small package which allows a [JCA security provider](https://docs.oracle.com/javase/8/docs/technotes/guides/security/crypto/CryptoSpec.html#Provider) to be loaded into a JVM automatically, using a Java agent.
 
 This is because even if you want to use a custom JSSE provider, the JVM does not make it especially easy to swap out or configure.  The means of configuration is obscure, barely documented, and unlike anything else.
@@ -9,6 +11,23 @@ Meanwhile, Java agents and service loaders are very well documented and standard
 ## Installation
 
 The core of JCA provider service is a small java agent and some ServiceLoader code.
+
+Currently the project is published through bintray:
+
+```xml
+<repositories>
+    <repository>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <id>bintray-tersesystems-maven</id>
+        <name>bintray</name>
+        <url>https://dl.bintray.com/tersesystems/maven</url>
+    </repository>
+</repositories>
+```
+
+and then you add the dependency:
 
 ```xml
 <dependencies>
@@ -140,6 +159,8 @@ mypackage.MyJcaProvider
 ### Using Maven
 
 TODO
+
+
 
 ### Using SBT
 
