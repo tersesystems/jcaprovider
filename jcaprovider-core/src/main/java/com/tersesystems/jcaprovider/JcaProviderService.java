@@ -4,9 +4,7 @@ import com.tersesystems.jcaprovider.spi.JcaProvider;
 
 import java.security.Provider;
 import java.security.Security;
-import java.util.Iterator;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,12 +30,20 @@ public class JcaProviderService {
         return service;
     }
 
-    public Provider generateProvider() throws Exception {
-        Provider provider = generateProviderFromSystemProperty();
-        if (provider == null) {
-            provider = generateProviderFromServiceLoader();
+    public void removeProviders() throws Exception {
+        List<Provider> providers = generateProviders();
+        for (Provider provider : providers) {
+            Security.removeProvider(provider.getName());
         }
-        return provider;
+    }
+
+    public List<Provider> generateProviders() throws Exception {
+        List<Provider> systemPropertyProviders = generateProvidersFromSystemProperty();
+        List<Provider> serviceLoaderProviders = generateProvidersFromServiceLoader();
+        ArrayList<Provider> providers = new ArrayList<>();
+        providers.addAll(systemPropertyProviders);
+        providers.addAll(serviceLoaderProviders);
+        return providers;
     }
 
     /**
@@ -45,35 +51,38 @@ public class JcaProviderService {
      *
      * @return the position that the provider was installed as, -1 if it was already installed, -2 if no provider was found.
      */
-    public int insertProvider() throws Exception {
-        Provider provider = generateProvider();
-        if (provider != null) {
-            return Security.insertProviderAt(provider, 1);
-        }  else {
+    public int[] insertProviders() throws Exception {
+        List<Provider> providers = generateProviders();
+        if (providers.isEmpty()) {
             logger.warning("No JCA provider specified!");
-            return -2;
+            return new int[0];
+        } else {
+            int[] codes = new int[providers.size()];
+            for (int i = 0; i < providers.size(); i++) {
+                Provider provider = providers.get(i);
+                codes[i] = Security.insertProviderAt(provider, 1);
+            }
+            return codes;
         }
     }
 
-    private Provider generateProviderFromServiceLoader() {
-        Provider provider = null;
+    private List<Provider> generateProvidersFromServiceLoader() {
+        List<Provider> providers = new ArrayList<>();
         try {
-            Iterator<JcaProvider> providers = loader.iterator();
-            while (provider == null && providers.hasNext()) {
-                JcaProvider d = providers.next();
-                provider = d.apply();
+            for (JcaProvider jcaProvider : loader) {
+                Provider provider = jcaProvider.apply();
+                providers.add(provider);
             }
         } catch (ServiceConfigurationError serviceError) {
-            provider = null;
             logger.log(Level.SEVERE, "Cannot load service: " + serviceError.getMessage());
         }
-        return provider;
+        return providers;
     }
 
-    private Provider generateProviderFromSystemProperty() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+    private List<Provider> generateProvidersFromSystemProperty() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         String className = generateClassName();
         if (className == null) {
-           return null;
+           return Collections.emptyList();
         }
 
         // https://docs.oracle.com/javase/8/docs/technotes/guides/security/crypto/HowToImplAProvider.html
@@ -83,7 +92,7 @@ public class JcaProviderService {
 
         // Assume that the provider has a no-args constructor
         Provider provider = (Provider) providerClass.newInstance();
-        return provider;
+        return Collections.singletonList(provider);
     }
 
     private static String generateClassName() {

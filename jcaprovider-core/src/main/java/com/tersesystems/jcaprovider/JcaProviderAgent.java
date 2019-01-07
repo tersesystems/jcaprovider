@@ -6,10 +6,10 @@ package com.tersesystems.jcaprovider;
 public class JcaProviderAgent {
 
     public static void premain(String args) throws Exception {
-        JcaProviderService.getInstance().insertProvider();
+        JcaProviderService.getInstance().insertProviders();
     }
 
     public static void agentmain(String agentArgs) throws Exception {
-        JcaProviderService.getInstance().insertProvider();
+        JcaProviderService.getInstance().insertProviders();
     }
 }

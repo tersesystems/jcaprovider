@@ -2,42 +2,134 @@
 
 This is a very small package which allows a custom JCA provider to be used as the default JCA provider, by using a Java agent.
 
-You can specify a JCA provider using a system property, or you can provide your own plugin.
-
 ## Installation
 
-Add the JAR and the classes of the JCA provider you want to the classpath, either directly (boot classpath is safest)
+The core of JCA provider service is a small java agent and some ServiceLoader code.
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>com.tersesystems.jcaprovider</groupId>
+        <artifactId>jcaprovider-core</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <scope>compile</scope>
+    </dependency>
+</dependencies>
+```
+
+Add the java agent, to your program at runtime.  
 
 ```bash
-java -Xbootclasspath/p:jcaproviderservice-1.0-SNAPSHOT.jar
+java -javaagent:/home/wsargent/.m2/repository/com/tersesystems/jcaprovider/jcaprovider-core/0.1.0-SNAPSHOT/jcaprovider-core-0.1.0-SNAPSHOT.jar
 ```
 
 Or by adding it to `JAVA_TOOL_OPTIONS`:
 
 ```bash
-export JAVA_TOOL_OPTIONS="-Xbootclasspath/p:jcaproviderservice-1.0-SNAPSHOT.jar"
+export JAVA_TOOL_OPTIONS="-javaagent:/home/wsargent/.m2/repository/com/tersesystems/jcaprovider/jcaprovider-core/0.1.0-SNAPSHOT/jcaprovider-core-0.1.0-SNAPSHOT.jar"
 ```
 
-## Usage
+This will then load any JCA service provider implementation that you have in your classpath automatically
 
-You specify the JCA provider you want in one of two ways, either by using the system property:
+### Manual Installation
+
+If you do not have the core loaded as a Java agent, then you can load any providers manually by doing the following:
+
+```java
+import com.tersesystems.jcaprovider.JcaProviderService;
+
+JcaProviderService instance = JcaProviderService.getInstance();
+instance.insertProviders(); // Calls Security.insertProviderAt(provider, 1) for listed providers
+```
+
+## Specifying a JCA Provider implementation
+
+You specify the provider implementation in one of several ways. 
+
+### Using Pre-built Service Provider
+
+There are several subprojects which have implementations available.  You add these to your project, and then you're done.
+
+#### DebugJSSE
+
+The [DebugJSSE Provider](https://github.com/tersesystems/debugjsse): 
+
+```xml
+<dependency>
+    <groupId>com.tersesystems.jcaprovider</groupId>
+    <artifactId>jcaprovider-debugjsse</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <scope>compile</scope>
+</dependency>
+```
+
+#### CloudFoundry Provider
+
+The [CloudFoundry Provider](https://github.com/cloudfoundry/java-buildpack-security-provider):
+
+```xml
+<dependency>
+    <groupId>com.tersesystems.jcaprovider</groupId>
+    <artifactId>jcaprovider-cloudfoundry</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <scope>compile</scope>
+</dependency>
+```
+
+#### BouncyCastle Provider
+
+The [BouncyCastle Provider](https://bouncycastle.org/docs/docs1.5on/org/bouncycastle/jce/provider/BouncyCastleProvider.html):
+
+```xml
+<dependency>
+    <groupId>com.tersesystems.jcaprovider</groupId>
+    <artifactId>jcaprovider-bouncycastle</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <scope>compile</scope>
+</dependency>
+```
+
+#### BouncyCastle TLS
+
+The [BouncyCastle TLS Provider](https://www.bouncycastle.org/docs/tlsdocs1.5on/org/bouncycastle/jsse/provider/BouncyCastleJsseProvider.html):
+
+```xml
+<dependency>
+    <groupId>com.tersesystems.jcaprovider</groupId>
+    <artifactId>jcaprovider-bouncycastle-tls</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <scope>compile</scope>
+</dependency>
+```
+
+### Using Reflection
+
+You can also specify a provider through reflection, using the `com.tersesystems.jcaprovider.name` system property.
 
 ```bash
 java -Dcom.tersesystems.jcaprovider.name=com.tersesystems.debugjsse.DebugJSSEProvider
 ```
 
-or by using a provider with the `ServiceLoader` pattern:
+### Writing a custom service provider
+
+Finally, you can always specify a provider yourself with the [service loader pattern](https://docs.oracle.com/javase/tutorial/ext/basics/spi.html), which is as simple as implementing the `JcaProvider` interface:
 
 ```java
-public class CloudFoundryJcaProvider implements com.tersesystems.jcaprovider.spi.JcaProvider {
+package mypackage;
+
+public class MyJcaProvider implements com.tersesystems.jcaprovider.spi.JcaProvider {
     @Override
     public Provider apply() {
-        return new org.cloudfoundry.security.CloudFoundryContainerProvider();
+        return new MyProvider();
     }
 }
 ```
 
-The serviceloader pattern is more flexible, because it allows for more configuration options and doesn't hardcode to a no-args constructor, and also lets you chain / delegate more easily.
+and a `META-INF/services/com.tersesystems.jcaprovider.spi.JcaProvider` file containing
+
+```
+mypackage.MyJcaProvider
+```
 
 ## Adding a Provider by Hand
 

@@ -1,4 +1,4 @@
-package com.tersesystems.jcaprovider;
+package com.tersesystems.jcaprovider.bouncycastletls;
 
 
 import org.slf4j.bridge.SLF4JBridgeHandler;
