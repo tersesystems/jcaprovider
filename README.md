@@ -131,6 +131,39 @@ and a `META-INF/services/com.tersesystems.jcaprovider.spi.JcaProvider` file cont
 mypackage.MyJcaProvider
 ```
 
+## Examples
+
+### Using Maven
+
+TODO
+
+### Using SBT
+
+You can specify the java agent and implementation directly in `build.sbt` and a couple of plugins:
+
+```scala
+addSbtPlugin("com.lightbend.sbt" % "sbt-javaagent" % "0.1.4")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.15")
+```
+
+and then in `build.sbt`:
+
+```scala
+// https://github.com/sbt/sbt-javaagent / sbt native packager handles java agent packaging
+lazy val root = (project in file(".")).enablePlugins(JavaAppPackaging, JavaAgent)
+  .settings(
+    inThisBuild(List(
+      organization := "com.example",
+      version      := "0.1.0-SNAPSHOT"
+    )),
+    name := "project-with-jcaprovider",
+    mainClass := Some("com.example.SecurityProgram"),
+    resolvers += Resolver.jcenterRepo,
+    javaAgents += "com.tersesystems.jcaprovider" % "jcaprovider-core" % "1.0-SNAPSHOT" % "dist;compile;test",
+    libraryDependencies += "com.tersesystems.jcaprovider" % "jcaprovider-debugjsse" % "1.0-SNAPSHOT" // use debugjsse as the implementation
+  )
+```
+
 ## Adding a Provider by Hand
 
 For the sake of completeness, I'll describe how to add a JCA provider by hand, the old-school way:
@@ -162,3 +195,5 @@ security.provider.7=com.sun.security.sasl.Provider
 security.provider.8=org.jcp.xml.dsig.internal.dom.XMLDSigRI
 security.provider.9=sun.security.smartcardio.SunPCSC
 ```
+
+I've always found this very strange and hard to remember, and I think using an agent and an implementation is a cleaner way to go.
