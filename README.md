@@ -174,11 +174,13 @@ For the sake of completeness, I'll describe how to add a JCA provider by hand, t
 
 You must declare the JCA provider in a [security file](https://docs.oracle.com/javase/9/security/java-secure-socket-extension-jsse-reference-guide.htm#JSSEC-GUID-59723547-D466-44C9-B066-EC5098B508E6)
 
+Here, the bit before the pipe `|` is the name of the provider, followed by the class.
+
 ```bash
 security.provider.1=debugJSSE|com.tersesystems.debugjsse.DebugJSSEProvider
 ```
 
-You must then append your security file by using the `java.security.properties` option wiht a single equals sign:
+You must then append your security file by using the `java.security.properties` security property with a [single equals sign](https://blog.eyallupu.com/2012/11/how-to-overriding-java-security.html):
 
 ```bash
 java -Djava.security.properties=my.java.security
@@ -200,4 +202,4 @@ security.provider.8=org.jcp.xml.dsig.internal.dom.XMLDSigRI
 security.provider.9=sun.security.smartcardio.SunPCSC
 ```
 
-I've always found this very strange and hard to remember, and I think using an agent and an implementation is a cleaner way to go.
+But this is not something I've had to do.
