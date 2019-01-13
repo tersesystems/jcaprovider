@@ -195,7 +195,7 @@ If you are using Java 9 or higher, then in theory you can provide a `java.securi
 
 There is more documentation available under [Step 4: Create a Module Declaration for Your Provider](https://docs.oracle.com/javase/9/security/howtoimplaprovider.htm#JSSEC-GUID-7C304A79-6D0B-438B-A02E-51648C909876) with follow up in [Step 8.1: Configure the Provider](https://docs.oracle.com/javase/9/security/howtoimplaprovider.htm#GUID-831AA25F-F702-442D-A2E4-8DA6DEA16F33) and [Step 10: Run Your Test Programs](https://docs.oracle.com/javase/9/security/howtoimplaprovider.htm#JSSEC-GUID-3FD26072-6982-4DCE-932C-DE152C463992).
 
-I say in theory because I have not had occasion to use Java 9 myself.  I may add `java.security.Provider` to the prebuilt providers if there is interest, or if someone submits a PR and makes the code Java 9 compatible, I will accept it.
+This code is different from the service loader pattern in that it defines an interface which you implement yourself.  In Java 9, you must extend the `Provider` abstract class, which means that you must implement a constructor and working inside the instantiation of the provider, and you give up control over instantation yourself.
 
 ## Adding a Provider by Hand
 
